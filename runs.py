@@ -129,6 +129,7 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
                 reward = Tictactoe.reward(player=Player.player)
                 rewards.append(reward)
                 break
+        Player.n += 1
         if n%250 == 249:
             average_rewards.append(sum(rewards)/len(rewards))
             rewards = []
@@ -138,6 +139,6 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
 
 
 if __name__ == '__main__':
-    Player = QLearningPlayer(eps=0.0)
-    a,b,c = run_against_Opt(Player, n_games=50000, opt_eps=0.5)
+    Player = QLearningPlayer(eps=0.0, decreasing_exploration=True)
+    a,b,c = run_against_Opt(Player, n_games=20000, opt_eps=0.5)
     print(a)

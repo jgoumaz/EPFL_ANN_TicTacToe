@@ -7,6 +7,7 @@ class QLearningPlayer():
         self.alpha = alpha
         self.gamma = gamma
         self.decreasing_exploration = decreasing_exploration
+        self.n = 0
         if decreasing_exploration:
             self.eps_min = eps_min
             self.eps_max = eps_max
@@ -58,6 +59,8 @@ class QLearningPlayer():
 
     def act(self, grid):
         """ Play """
+        if self.decreasing_exploration:
+            self.eps = max(self.eps_min, self.eps_max * (1 - self.n / self.n_star))
         if random.random() < self.eps:
             move = self.randomMove(grid)
         else:
