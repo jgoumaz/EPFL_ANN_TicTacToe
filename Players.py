@@ -44,10 +44,10 @@ class QLearningPlayer():
 
         return avail[random.randint(0, len(avail)-1)]
 
-    def update_Q(self, grid, action, new_grid, reward):
+    def update_Q(self, new_grid, reward):
         """ Update Q value """
-        action = position_to_index(action)
-        grid = grid_to_string(grid)
+        action = position_to_index(self.action)
+        grid = grid_to_string(self.grid)
         new_grid = grid_to_string(new_grid)
         _ = self.Q[grid][action] # used to initialize missing Q value
         if len(self.Q[new_grid].values()) != 0:
@@ -69,4 +69,6 @@ class QLearningPlayer():
             random.shuffle(actions)
             best_action = max(actions, key=lambda x: x[1])[0]
             move = index_to_position(best_action)
+        self.grid = grid
+        self.action = move
         return move

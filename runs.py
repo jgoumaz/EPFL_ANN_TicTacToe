@@ -115,9 +115,9 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
             else:
                 move = Player.act(old_grid)
             new_grid, end, winner = Tictactoe.step(move)
-            if Tictactoe.get_current_player() == Opt.player:
+            if (Tictactoe.get_current_player() == Player.player and round > 0) or end:
                 reward = Tictactoe.reward(player=Player.player)
-                Player.update_Q(old_grid, move, new_grid, reward)
+                Player.update_Q(new_grid, reward)
             if end:
                 if winner == Player.player:
                     wins += 1
