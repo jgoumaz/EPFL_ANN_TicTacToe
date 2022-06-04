@@ -49,17 +49,24 @@ class QLearningPlayer():
         action = position_to_index(action)
         grid = grid_to_string(grid)
         new_grid = grid_to_string(new_grid)
-        max_next_state = max(self.Q[new_grid].values())
+        _ = self.Q[grid][action] # used to initialize missing Q value
+        if len(self.Q[new_grid].values()) != 0:
+            max_next_state = max(self.Q[new_grid].values())
+        else:
+            max_next_state = 0.0
         self.Q[grid][action] = (1 - self.alpha) * self.Q[grid][action] + self.alpha * (reward + self.gamma * max_next_state)
 
     def act(self, grid):
         """ Play """
         if random.random() < self.eps:
-            return self.randomMove(grid)
+            move = self.randomMove(grid)
         else:
             avail = self.empty(grid)
             for index in position_to_index(avail):
                 _ = self.Q[grid_to_string(grid)][index] # used to initialize all missing Q values
-            best_action = max(self.Q[grid_to_string(grid)], key=self.Q[grid_to_string(grid)].get)
-            return index_to_position(best_action)
-
+            # best_action = max(list(self.Q[grid_to_string(grid)]), key=self.Q[grid_to_string(grid)].get)
+            actions = list(self.Q[grid_to_string(grid)].items())
+            random.shuffle(actions)
+            best_action = max(actions, key=lambda x: x[1])[0]
+            move = index_to_position(best_action)
+        return move

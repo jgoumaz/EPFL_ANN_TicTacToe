@@ -12,8 +12,8 @@ def compute_M_opt(Player):
     # 250 games for Opt(0)
     for n in range(n_games/2):
         Tictactoe.reset()
-        Opt.set_player(n)
-        Player.set_player(n + 1)
+        Opt.set_player(j=n)
+        Player.set_player(j=n+1)
         for round in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
@@ -29,8 +29,8 @@ def compute_M_opt(Player):
     # 250 games for Opt(1)
     for n in range(n_games/2):
         Tictactoe.reset()
-        Opt.set_player(n+1)
-        Player.set_player(n)
+        Opt.set_player(j=n+1)
+        Player.set_player(j=n)
         for round in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
@@ -57,8 +57,8 @@ def compute_M_rand(Player):
     # 250 games for Opt(0)
     for n in range(n_games / 2):
         Tictactoe.reset()
-        Opt.set_player(n)
-        Player.set_player(n + 1)
+        Opt.set_player(j=n)
+        Player.set_player(j=n+1)
         for round in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
@@ -75,8 +75,8 @@ def compute_M_rand(Player):
     # 250 games for Opt(1)
     for n in range(n_games / 2):
         Tictactoe.reset()
-        Opt.set_player(n + 1)
-        Player.set_player(n)
+        Opt.set_player(j=n+1)
+        Player.set_player(j=n)
         for round in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
@@ -106,8 +106,8 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
     Opt = OptimalPlayer(epsilon=opt_eps)
     for n in range(n_games):
         Tictactoe.reset()
-        Opt.set_player(n)
-        Player.set_player(n+1)
+        Opt.set_player(j=n)
+        Player.set_player(j=n+1)
         for round in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
@@ -135,3 +135,8 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
             if return_M_rand: M_rands.append(compute_M_rand(Player))
     return average_rewards, M_opts, M_rands
 
+
+if __name__ == '__main__':
+    Player = QLearningPlayer(eps=0.0)
+    a,b,c = run_against_Opt(Player, n_games=2000, opt_eps=0.5)
+    print(a)
