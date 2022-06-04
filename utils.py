@@ -1,5 +1,7 @@
 import warnings
 
+import numpy as np
+
 
 def index_to_position(index):
     """ Transform 1d int index to 2d tuple position """
@@ -31,4 +33,11 @@ def position_to_index(position):
     else:
         warnings.warn("position_to_index got an unexpected input.")
         return None
+
+
+def grid_to_string(grid):
+    grid_flatten = list(grid.flatten())
+    grid_flatten_converted = [str(el+1).replace('0','O').replace('1','-').replace('2','X') for el in grid_flatten]
+    grid_hash = "".join(grid_flatten_converted)
+    return grid_hash
 
