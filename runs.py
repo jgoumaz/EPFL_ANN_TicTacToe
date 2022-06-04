@@ -115,7 +115,7 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
             else:
                 move = Player.act(old_grid)
             new_grid, end, winner = Tictactoe.step(move)
-            if Tictactoe.get_current_player() == Player.player:
+            if Tictactoe.get_current_player() == Opt.player:
                 reward = Tictactoe.reward(player=Player.player)
                 Player.update_Q(old_grid, move, new_grid, reward)
             if end:
@@ -138,5 +138,5 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
 
 if __name__ == '__main__':
     Player = QLearningPlayer(eps=0.0)
-    a,b,c = run_against_Opt(Player, n_games=2000, opt_eps=0.5)
+    a,b,c = run_against_Opt(Player, n_games=20000, opt_eps=0.5)
     print(a)
