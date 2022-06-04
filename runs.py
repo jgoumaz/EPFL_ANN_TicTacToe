@@ -71,6 +71,7 @@ def compute_M_rand(Player):
                     wins += 1
                 elif winner == Opt.player:
                     losses += 1
+                break
     # 250 games for Opt(1)
     for n in range(n_games / 2):
         Tictactoe.reset()
@@ -88,6 +89,7 @@ def compute_M_rand(Player):
                     wins += 1
                 elif winner == Opt.player:
                     losses += 1
+                break
     M_rand = wins - losses / n_games
     return M_rand
 
