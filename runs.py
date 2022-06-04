@@ -11,7 +11,7 @@ def compute_M_opt(Player):
     Tictactoe = TictactoeEnv()
     Opt = OptimalPlayer(epsilon=0)
     # 250 games for Opt(0)
-    for n in range(n_games/2):
+    for n in range(n_games // 2):
         Tictactoe.reset()
         Opt.set_player(j=n)
         Player.set_player(j=n+1)
@@ -27,8 +27,9 @@ def compute_M_opt(Player):
                     wins += 1
                 elif winner == Opt.player:
                     losses += 1
+                break
     # 250 games for Opt(1)
-    for n in range(n_games/2):
+    for n in range(n_games // 2):
         Tictactoe.reset()
         Opt.set_player(j=n+1)
         Player.set_player(j=n)
@@ -45,7 +46,8 @@ def compute_M_opt(Player):
                     wins += 1
                 elif winner == Opt.player:
                     losses += 1
-    M_opt = wins - losses / n_games
+                break
+    M_opt = (wins - losses) / n_games
     return M_opt
 
 
@@ -56,7 +58,7 @@ def compute_M_rand(Player):
     n_games = 500
     Opt = OptimalPlayer(epsilon=1)
     # 250 games for Opt(0)
-    for n in range(n_games / 2):
+    for n in range(n_games // 2):
         Tictactoe.reset()
         Opt.set_player(j=n)
         Player.set_player(j=n+1)
@@ -74,7 +76,7 @@ def compute_M_rand(Player):
                     losses += 1
                 break
     # 250 games for Opt(1)
-    for n in range(n_games / 2):
+    for n in range(n_games // 2):
         Tictactoe.reset()
         Opt.set_player(j=n+1)
         Player.set_player(j=n)
@@ -91,7 +93,7 @@ def compute_M_rand(Player):
                 elif winner == Opt.player:
                     losses += 1
                 break
-    M_rand = wins - losses / n_games
+    M_rand = (wins - losses) / n_games
     return M_rand
 
 
@@ -139,6 +141,6 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
 
 
 if __name__ == '__main__':
-    Player = QLearningPlayer(eps=0.0, decreasing_exploration=True)
-    a,b,c = run_against_Opt(Player, n_games=20000, opt_eps=0.5)
-    print(a)
+    Player = QLearningPlayer(eps=0.0, decreasing_exploration=False)
+    a,b,c = run_against_Opt(Player, n_games=2000, opt_eps=0.5)
+    print(a,b,c)
