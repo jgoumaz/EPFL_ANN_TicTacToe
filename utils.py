@@ -1,12 +1,34 @@
+import warnings
 
 
-def index_to_position(index_value):
+def index_to_position(index):
     """ Transform 1d int index to 2d tuple position """
-    position = (int(index_value / 3), index_value % 3)
-    return position
+    if type(index) is int:
+        position = (int(index / 3), index % 3)
+        return position
+    elif type(index) is list:
+        positions = []
+        for el in index:
+            position = (int(el / 3), el % 3)
+            positions.append(position)
+        return positions
+    else:
+        warnings.warn("index_to_position got an unexpected input.")
+        return None
 
-def position_to_index(index_tuple):
+
+def position_to_index(position):
     """ Transform 2d tuple position to 1d int index """
-    index = 3 * index_tuple[0] + index_tuple[1]
-    return index
+    if type(position[0]) is int:
+        index = 3 * position[0] + position[1]
+        return index
+    elif type(position[0]) is tuple:
+        indices = []
+        for el in position:
+            index = 3 * el[0] + el[1]
+            indices.append(index)
+        return indices
+    else:
+        warnings.warn("position_to_index got an unexpected input.")
+        return None
 
