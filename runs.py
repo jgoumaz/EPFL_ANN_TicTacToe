@@ -135,8 +135,10 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
         if n%250 == 249:
             average_rewards.append(sum(rewards)/len(rewards))
             rewards = []
+            Player.perfect_play = True
             if return_M_opt: M_opts.append(compute_M_opt(Player))
             if return_M_rand: M_rands.append(compute_M_rand(Player))
+            Player.perfect_play = False
     return average_rewards, M_opts, M_rands
 
 # def run_against_itself(Player, n_games=100, return_M_opt=False, return_M_rand=False):
