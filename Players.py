@@ -3,7 +3,7 @@ from utils import *
 from collections import defaultdict
 
 class QLearningPlayer():
-    def __init__(self, alpha=0.05, gamma=0.99, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000):
+    def __init__(self, alpha=0.05, gamma=0.99, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000, player='X'):
         self.alpha = alpha
         self.gamma = gamma
         self.decreasing_exploration = decreasing_exploration
@@ -15,7 +15,7 @@ class QLearningPlayer():
             self.eps = eps
 
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.0))
-        self.player = None
+        self.player = player
 
     def set_player(self, player='X', j=-1):
         """
@@ -60,4 +60,4 @@ class QLearningPlayer():
                 _ = self.Q[grid][index] # used to initialize all missing Q values
             best_action = max(self.Q[grid], key=self.Q[grid].get)
             return index_to_position(best_action)
-        
+
