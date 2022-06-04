@@ -1,6 +1,6 @@
 import random
-from collections import defaultdict
 from utils import *
+from collections import defaultdict
 
 class QLearningPlayer():
     def __init__(self, alpha=0.05, gamma=0.99, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000):
@@ -44,16 +44,20 @@ class QLearningPlayer():
 
         return avail[random.randint(0, len(avail)-1)]
 
-    def update_Q(self, state, action, new_state, reward):
+    def update_Q(self, state, action, next_state, reward):
         """ Update Q value """
-        pass
+        action = position_to_index(action)
+        max_next_state = max(self.Q[next_state].values())
+        self.Q[state][action] = (1 - self.alpha) * self.Q[state][action] + self.alpha * (reward + self.gamma * max_next_state)
 
     def act(self, grid):
         """ Play """
         if random.random() < self.eps:
             return self.randomMove(grid)
-
-        avail = self.empty(grid)
-
-        # get reward
-        # self.update_Q()
+        else:
+            avail = self.empty(grid)
+            for index in position_to_index(avail):
+                _ = self.Q[grid][index] # used to initialize all missing Q values
+            best_action = max(self.Q[grid], key=self.Q[grid].get)
+            return index_to_position(best_action)
+        
