@@ -8,12 +8,11 @@ class QLearningPlayer():
         self.gamma = gamma
         self.decreasing_exploration = decreasing_exploration
         self.n = 0
+        self.eps = eps
         if decreasing_exploration:
             self.eps_min = eps_min
             self.eps_max = eps_max
             self.n_star = n_star
-        else:
-            self.eps = eps
 
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.0))
         self.player = player
