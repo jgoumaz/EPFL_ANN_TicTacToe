@@ -1,5 +1,6 @@
 import random
 from collections import defaultdict
+from utils import *
 
 class QLearningPlayer():
     def __init__(self, alpha=0.05, gamma=0.99, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000):
