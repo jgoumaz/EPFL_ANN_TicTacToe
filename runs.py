@@ -128,7 +128,7 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
                 reward = Tictactoe.reward(player=Player.player)
                 rewards.append(reward)
                 break
-        if n%250 == 0:
+        if n%250 == 249:
             average_rewards.append(sum(rewards)/len(rewards))
             rewards = []
             if return_M_opt: M_opts.append(compute_M_opt(Player))
