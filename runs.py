@@ -1,3 +1,4 @@
+import time
 from utils import *
 from Players import *
 from tic_env import TictactoeEnv, OptimalPlayer
@@ -14,7 +15,7 @@ def compute_M_opt(Player):
         Tictactoe.reset()
         Opt.set_player(j=n)
         Player.set_player(j=n+1)
-        for round in range(9):
+        for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
                 move = Opt.act(old_grid)
@@ -31,7 +32,7 @@ def compute_M_opt(Player):
         Tictactoe.reset()
         Opt.set_player(j=n+1)
         Player.set_player(j=n)
-        for round in range(9):
+        for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
                 move = Opt.act(old_grid)
@@ -59,7 +60,7 @@ def compute_M_rand(Player):
         Tictactoe.reset()
         Opt.set_player(j=n)
         Player.set_player(j=n+1)
-        for round in range(9):
+        for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
                 move = Opt.act(old_grid)
@@ -77,7 +78,7 @@ def compute_M_rand(Player):
         Tictactoe.reset()
         Opt.set_player(j=n+1)
         Player.set_player(j=n)
-        for round in range(9):
+        for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
                 move = Opt.act(old_grid)
@@ -108,14 +109,14 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
         Tictactoe.reset()
         Opt.set_player(j=n)
         Player.set_player(j=n+1)
-        for round in range(9):
+        for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt.player:
                 move = Opt.act(old_grid)
             else:
                 move = Player.act(old_grid)
             new_grid, end, winner = Tictactoe.step(move)
-            if (Tictactoe.get_current_player() == Player.player and round > 0) or end:
+            if (Tictactoe.get_current_player() == Player.player and turn > 0) or end:
                 reward = Tictactoe.reward(player=Player.player)
                 Player.update_Q(new_grid, reward)
             if end:
@@ -138,5 +139,5 @@ def run_against_Opt(Player, n_games=100, opt_eps=0.2, return_M_opt=False, return
 
 if __name__ == '__main__':
     Player = QLearningPlayer(eps=0.0)
-    a,b,c = run_against_Opt(Player, n_games=20000, opt_eps=0.5)
+    a,b,c = run_against_Opt(Player, n_games=50000, opt_eps=0.5)
     print(a)
