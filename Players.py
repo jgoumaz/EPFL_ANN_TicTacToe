@@ -82,6 +82,7 @@ class QLearningPlayer():
 
 class BufferMemory(object):
     def __init__(self, buffer_size):
+        self.DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.buffer = deque([], maxlen=buffer_size)
         self.Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
@@ -90,6 +91,15 @@ class BufferMemory(object):
 
     def store(self, state, action, new_state, reward):
         """ Stores a transition containing (state, action, new_state, reward) """
+        if type(action) is not torch.Tensor:
+            action = torch.tensor([[action]]).to(self.DEVICE)
+        if type(reward) is not torch.Tensor:
+            reward = torch.tensor([[reward]]).to(self.DEVICE)
+        if state.ndim == 3:
+            state = state.unsqueeze(0)
+        if new_state is not None:
+            if new_state.ndim == 3:
+                new_state = new_state.unsqueeze(0)
         self.buffer.append(self.Transition(state, action, new_state, reward))
 
     def sample_random_minibatch(self, batch_size):
@@ -102,9 +112,9 @@ class DQN(nn.Module):
         super(DQN, self).__init__()
         self.DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        self.lin1 = nn.Linear(18, 128)
-        self.lin2 = nn.Linear(128, 128)
-        self.lin3 = nn.Linear(128, 9)
+        self.lin1 = nn.Linear(18, 128).to(self.DEVICE)
+        self.lin2 = nn.Linear(128, 128).to(self.DEVICE)
+        self.lin3 = nn.Linear(128, 9).to(self.DEVICE)
 
     def forward(self, x_t):
         x_t = x_t.to(self.DEVICE)
@@ -153,9 +163,14 @@ class DeepQLearningPlayer(QLearningPlayer):
 
         next_state_values = torch.zeros(self.batch_size, device=self.DEVICE)  # V(s_{t+1})
         next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
-        expected_state_action_values = (reward_batch + self.gamma * next_state_values).unsqueeze(1)  # expected Q(s_t, a)
+        next_state_values = next_state_values.unsqueeze(1)
 
-        criterion = nn.HuberLoss(delta=1.0)
+        # print(state_batch.shape, action_batch.shape, reward_batch.shape, next_state_values.shape)
+        expected_state_action_values = (reward_batch + self.gamma * next_state_values)  # expected Q(s_t, a)
+
+        # print(state_action_values.shape, expected_state_action_values.shape)
+
+        criterion = nn.HuberLoss(delta=1.0).to(self.DEVICE)
         loss = criterion(state_action_values, expected_state_action_values)
 
         # Optimize the model
@@ -165,9 +180,9 @@ class DeepQLearningPlayer(QLearningPlayer):
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
-    def randomMove(self, grid):
-        """ Chose a random move. """
-        return torch.tensor([[random.randrange(9)]], device=self.DEVICE) # FIXME: dtype=torch.long ?
+    # def randomMove(self, grid):
+    #     """ Chose a random move. """
+    #     return torch.tensor([[random.randrange(9)]], device=self.DEVICE) # FIXME: dtype=torch.long ?
 
     def act(self, grid):
         """ Play """
@@ -176,7 +191,8 @@ class DeepQLearningPlayer(QLearningPlayer):
         if self.decreasing_exploration:
             self.eps = max(self.eps_min, self.eps_max * (1 - self.n / self.n_star))
         if random.random() < self.eps and self.best_play == False:
-            move = self.randomMove(grid)
+            # move = self.randomMove(grid)
+            move = torch.tensor([[position_to_index(self.randomMove(tensor_to_grid(grid, self.player)))]], device=self.DEVICE)
         else:
             with torch.no_grad():
                 move = self.policy_net(grid).max(dim=1)[1].view(-1, 1)

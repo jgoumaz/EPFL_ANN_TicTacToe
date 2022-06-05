@@ -16,9 +16,16 @@ def test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X'):
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt_player:
                 move = Opt.act(old_grid)
+                move_valid = True
             else:
                 move = Player.act(old_grid)
-            new_grid, end, winner = Tictactoe.step(move)
+                move_valid = Tictactoe.check_valid(move)
+
+            if move_valid:
+                new_grid, end, winner = Tictactoe.step(move)
+            else:
+                end = True
+                winner = Opt_player
             if end:
                 if winner == Player_player:
                     wins += 1
@@ -144,9 +151,9 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
         Player.set_player(j=n+1)
         for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
-            old_grids.append(old_grid)
+            old_grids.append(grid_to_tensor(old_grid, player=Player.player))
             if Tictactoe.get_current_player() == Opt.player:
-                move = Opt.act(old_grid)
+                move = position_to_index(Opt.act(old_grid))
                 move_valid = True
             else:
                 move = Player.act(old_grid)
@@ -154,6 +161,7 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
             moves.append(move)
             if move_valid:
                 new_grid, end, winner = Tictactoe.step(move)
+                new_grid = grid_to_tensor(new_grid, player=Player.player)
             else:
                 end = True
                 winner = Opt.player
@@ -166,13 +174,11 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
                 if move_valid == False:
                     reward = -1
                 if reward == 1: # The case when Player wins
-                    # Player.update_Q(new_grid, reward, old_grids[-1], moves[-1])
-                    Player.buffer.store(grid_to_tensor(old_grids[-1], player=Player.player), moves[-1], None, reward)
+                    Player.buffer.store(old_grids[-1], moves[-1], None, reward)
                 elif reward == -1: # The case when Player loses
-                    Player.buffer.store(grid_to_tensor(old_grids[-2], player=Player.player), moves[-2], None, reward)
+                    Player.buffer.store(old_grids[-2], moves[-2], None, reward)
                 else: # The case for ties
-                    # Player.update_Q(new_grid, reward, old_grids[-2], moves[-2])
-                    Player.buffer.store(grid_to_tensor(old_grids[-2], player=Player.player), moves[-2], grid_to_tensor(new_grid, player=Player.player), reward)
+                    Player.buffer.store(old_grids[-2], moves[-2], new_grid, reward)
                 Player.optimize_model()
             if end:
                 if winner == Player.player:
@@ -201,14 +207,15 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
 
 if __name__ == '__main__':
     random.seed(0)
+    torch.manual_seed(0)
     a, b, c = [], [], []
     t0 = time.time()
 
-    Player = QLearningPlayer(eps=0.3, decreasing_exploration=False)
+    # Player = QLearningPlayer(eps=0.3, decreasing_exploration=False)
     # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     # a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
-    Player = DeepQLearningPlayer(eps=0.3, decreasing_exploration=False)
-    a, b, c = run_DQN_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
+    Player = DeepQLearningPlayer(eps=0.1, decreasing_exploration=False)
+    a, b, c = run_DQN_against_Opt(Player, n_games=4000, return_M_opt=True, return_M_rand=True)
     print(a, b, c)
 
     t1 = time.time()
