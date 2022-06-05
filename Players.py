@@ -1,9 +1,10 @@
 import random
 from utils import *
-from collections import defaultdict, deque
+from collections import defaultdict, namedtuple, deque
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 
 class QLearningPlayer():
@@ -82,13 +83,14 @@ class QLearningPlayer():
 class BufferMemory(object):
     def __init__(self, buffer_size):
         self.buffer = deque([], maxlen=buffer_size)
+        self.Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
     def __len__(self):
         return len(self.buffer)
 
-    def store(self, transition):
-        """ Stores a transition containing (new_state, reward, state, action) """
-        self.buffer.append(transition)
+    def store(self, state, action, new_state, reward):
+        """ Stores a transition containing (state, action, new_state, reward) """
+        self.buffer.append(self.Transition(state, action, new_state, reward))
 
     def sample_random_minibatch(self, batch_size):
         """ Samples a random minibatch of transitions """
@@ -114,3 +116,68 @@ class DQN(nn.Module):
         x_t = F.relu(self.lin2(x_t))
         x_t = self.lin3(x_t)
         return x_t
+
+
+class DeepQLearningPlayer(QLearningPlayer):
+    def __init__(self, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000):
+        super(DeepQLearningPlayer, self).__init__(eps=eps, decreasing_exploration=decreasing_exploration, eps_min=eps_min, eps_max=eps_max, n_star=n_star)
+        self.DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
+        self.buffer = BufferMemory(10000)
+        self.batch_size = 64
+        self.learning_rate = 5e-4
+        self.target_update = 500
+
+        self.policy_net = DQN().to(self.DEVICE)
+        self.target_net = DQN().to(self.DEVICE)
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.eval()
+
+        self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.learning_rate)
+
+    def optimize_model(self):
+        if len(self.buffer) < self.batch_size:
+            return None
+
+        transitions = self.buffer.sample(self.batch_size)
+        batch = self.Transition(*zip(*transitions))  # converts list of Transitions to Transition of lists
+
+        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=self.DEVICE, dtype=torch.bool)  # mask of non-final states
+        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])  # next states of non-final states
+        state_batch = torch.cat(batch.state)
+        action_batch = torch.cat(batch.action)
+        reward_batch = torch.cat(batch.reward)
+
+        state_action_values = self.policy_net(state_batch).gather(1, action_batch)  # Q(s_t, a)
+
+        next_state_values = torch.zeros(self.batch_size, device=self.DEVICE)  # V(s_{t+1})
+        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
+        expected_state_action_values = (reward_batch + self.gamma * next_state_values).unsqueeze(1)  # expected Q(s_t, a)
+
+        criterion = nn.HuberLoss(delta=1.0)
+        loss = criterion(state_action_values, expected_state_action_values)
+
+        # Optimize the model
+        self.optimizer.zero_grad()
+        loss.backward()
+        for param in self.policy_net.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()
+
+    def randomMove(self, grid):
+        """ Chose a random move. """
+        return torch.tensor([[random.randrange(9)]], device=self.DEVICE) # FIXME: dtype=torch.long ?
+
+    def act(self, grid):
+        """ Play """
+        if type(grid) is np.ndarray:
+            grid = grid_to_tensor(grid, self.player)
+        if self.decreasing_exploration:
+            self.eps = max(self.eps_min, self.eps_max * (1 - self.n / self.n_star))
+        if random.random() < self.eps and self.best_play == False:
+            move = self.randomMove(grid)
+        else:
+            with torch.no_grad():
+                move = self.policy_net(grid).max(dim=1)[1].view(-1, 1)
+        return move
+
