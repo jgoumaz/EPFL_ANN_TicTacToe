@@ -39,3 +39,11 @@ def grid_to_string(grid):
     grid_hash = "".join(grid_flatten_converted)
     return grid_hash
 
+
+def get_other_player(player='X'):
+   if player == 'X':
+       return 'O'
+   elif player == 'O':
+       return 'X'
+   else:
+       warnings.warn("get_other_player got an unexpected input.")

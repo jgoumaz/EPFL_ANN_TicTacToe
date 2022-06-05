@@ -45,12 +45,8 @@ class QLearningPlayer():
 
         return avail[random.randint(0, len(avail)-1)]
 
-    def update_Q(self, new_grid, reward, grid=None, action=None):
+    def update_Q(self, new_grid, reward, grid, action):
         """ Update Q value """
-        if action is None:
-            action = self.action
-        if grid is None:
-            grid = self.grid
         action = position_to_index(action)
         grid = grid_to_string(grid)
         new_grid = grid_to_string(new_grid)
@@ -76,6 +72,8 @@ class QLearningPlayer():
             random.shuffle(actions)
             best_action = max(actions, key=lambda x: x[1])[0]
             move = index_to_position(best_action)
-        self.grid = grid
-        self.action = move
         return move
+
+
+class Memory():
+    pass
