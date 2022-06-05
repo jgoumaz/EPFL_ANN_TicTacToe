@@ -1,6 +1,9 @@
 import random
 from utils import *
 from collections import defaultdict, deque
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 class QLearningPlayer():
     def __init__(self, alpha=0.05, gamma=0.99, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000, player='X'):
@@ -89,3 +92,24 @@ class BufferMemory(object):
     def sample_random_minibatch(self, batch_size):
         """ Samples a random minibatch of transitions """
         return random.sample(self.buffer, batch_size)
+
+
+class DQN(nn.Module):
+    def __init__(self):
+        super(DQN, self).__init__()
+        self.DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        self.lin1 = nn.Linear(18, 128)
+        self.lin2 = nn.Linear(128, 128)
+        self.lin3 = nn.Linear(128, 9)
+
+    def forward(self, x_t):
+        x_t = x_t.to(self.DEVICE)
+        if x_t.dim() == 3:
+            x_t = x_t.view(1, x_t.shape[0], x_t.shape[1], x_t.shape[2])
+        N = x_t.shape[0]
+
+        x_t = F.relu(self.lin1(x_t.view(N, -1)))
+        x_t = F.relu(self.lin2(x_t))
+        x_t = self.lin3(x_t)
+        return x_t
