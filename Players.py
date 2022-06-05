@@ -148,7 +148,7 @@ class DeepQLearningPlayer(QLearningPlayer):
         self.average_loss = None
         self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.learning_rate)
 
-        self.allow_illegal_random_move = True
+        self.allow_illegal_random_move = False
 
     def get_loss_average(self):
         if len(self.losses) != 0:
