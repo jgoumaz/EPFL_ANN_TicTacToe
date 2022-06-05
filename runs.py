@@ -4,96 +4,43 @@ from Players import *
 from tic_env import TictactoeEnv, OptimalPlayer
 
 
-def compute_M_opt(Player):
+def test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X'):
     wins = 0
     losses = 0
-    n_games = 500
     Tictactoe = TictactoeEnv()
-    Opt = OptimalPlayer(epsilon=0)
-    # 250 games for Opt(0)
-    for n in range(n_games // 2):
+    Opt = OptimalPlayer(epsilon=opt_eps)
+    Opt_player = get_other_player(Player_player)
+    for n in range(n_games):
         Tictactoe.reset()
-        Opt.set_player(j=n)
-        Player.set_player(j=n+1)
         for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
-            if Tictactoe.get_current_player() == Opt.player:
+            if Tictactoe.get_current_player() == Opt_player:
                 move = Opt.act(old_grid)
             else:
                 move = Player.act(old_grid)
             new_grid, end, winner = Tictactoe.step(move)
             if end:
-                if winner == Player.player:
+                if winner == Player_player:
                     wins += 1
-                elif winner == Opt.player:
+                elif winner == Opt_player:
                     losses += 1
                 break
-    # 250 games for Opt(1)
-    for n in range(n_games // 2):
-        Tictactoe.reset()
-        Opt.set_player(j=n+1)
-        Player.set_player(j=n)
-        for turn in range(9):
-            old_grid, _, _ = Tictactoe.observe()
-            if Tictactoe.get_current_player() == Opt.player:
-                move = Opt.act(old_grid)
-            else:
-                move = Player.act(old_grid)
-            new_grid, end, winner = Tictactoe.step(move)
+    return wins, losses
 
-            if end:
-                if winner == Player.player:
-                    wins += 1
-                elif winner == Opt.player:
-                    losses += 1
-                break
-    M_opt = (wins - losses) / n_games
+def compute_M_opt(Player):
+    wins1, losses1 = test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X')
+    wins2, losses2 = test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='O')
+    wins = wins1 + wins2
+    losses = losses1 + losses2
+    M_opt = (wins - losses) / 500
     return M_opt
 
-
 def compute_M_rand(Player):
-    wins = 0
-    losses = 0
-    Tictactoe = TictactoeEnv()
-    n_games = 500
-    Opt = OptimalPlayer(epsilon=1)
-    # 250 games for Opt(0)
-    for n in range(n_games // 2):
-        Tictactoe.reset()
-        Opt.set_player(j=n)
-        Player.set_player(j=n+1)
-        for turn in range(9):
-            old_grid, _, _ = Tictactoe.observe()
-            if Tictactoe.get_current_player() == Opt.player:
-                move = Opt.act(old_grid)
-            else:
-                move = Player.act(old_grid)
-            new_grid, end, winner = Tictactoe.step(move)
-            if end:
-                if winner == Player.player:
-                    wins += 1
-                elif winner == Opt.player:
-                    losses += 1
-                break
-    # 250 games for Opt(1)
-    for n in range(n_games // 2):
-        Tictactoe.reset()
-        Opt.set_player(j=n+1)
-        Player.set_player(j=n)
-        for turn in range(9):
-            old_grid, _, _ = Tictactoe.observe()
-            if Tictactoe.get_current_player() == Opt.player:
-                move = Opt.act(old_grid)
-            else:
-                move = Player.act(old_grid)
-            new_grid, end, winner = Tictactoe.step(move)
-            if end:
-                if winner == Player.player:
-                    wins += 1
-                elif winner == Opt.player:
-                    losses += 1
-                break
-    M_rand = (wins - losses) / n_games
+    wins1, losses1 = test_against_Opt(Player, n_games=250, opt_eps=1.0, Player_player='X')
+    wins2, losses2 = test_against_Opt(Player, n_games=250, opt_eps=1.0, Player_player='O')
+    wins = wins1 + wins2
+    losses = losses1 + losses2
+    M_rand = (wins - losses) / 500
     return M_rand
 
 
@@ -109,18 +56,25 @@ def run_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, retu
     Opt = OptimalPlayer(epsilon=opt_eps)
     for n in range(n_games):
         Tictactoe.reset()
+        old_grids = []
+        moves = []
         Opt.set_player(j=n)
         Player.set_player(j=n+1)
         for turn in range(9):
             old_grid, _, _ = Tictactoe.observe()
+            old_grids.append(old_grid)
             if Tictactoe.get_current_player() == Opt.player:
                 move = Opt.act(old_grid)
             else:
                 move = Player.act(old_grid)
+            moves.append(move)
             new_grid, end, winner = Tictactoe.step(move)
             if (Tictactoe.get_current_player() == Player.player and turn > 0) or end:
                 reward = Tictactoe.reward(player=Player.player)
-                Player.update_Q(new_grid, reward)
+                if reward == 1: # The case when Player wins
+                    Player.update_Q(new_grid, reward, old_grids[-1], moves[-1])
+                else: # All other cases
+                    Player.update_Q(new_grid, reward, old_grids[-2], moves[-2])
             if end:
                 if winner == Player.player:
                     wins += 1
@@ -173,6 +127,15 @@ def run_against_itself(Player, n_games=20000, return_M_opt=False, return_M_rand=
 
 
 if __name__ == '__main__':
+    random.seed(0)
+    t0 = time.time()
+
     Player = QLearningPlayer(eps=0.3, decreasing_exploration=False)
-    a,b = run_against_itself(Player, n_games=20000, return_M_opt=True, return_M_rand=True)
-    print(a,b)
+    a, b, c = [], [], []
+    a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
+    # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
+    print(a, b, c)
+
+    t1 = time.time()
+    print(f"Total time: {round(t1-t0,2)} sec")
+

@@ -1,4 +1,6 @@
 import warnings
+import torch
+import numpy as np
 
 
 def index_to_position(index):
@@ -38,4 +40,25 @@ def grid_to_string(grid):
     grid_flatten_converted = [str(el+1).replace('0','O').replace('1','-').replace('2','X') for el in grid_flatten]
     grid_hash = "".join(grid_flatten_converted)
     return grid_hash
+
+
+def grid_to_tensor(grid, player='X'):
+    tensor_grid = torch.zeros((2, 3, 3))
+    # tensor_grid[0] must contain positions taken by player
+    if player == 'X':
+        tensor_grid[0, grid == 1] = 1
+        tensor_grid[1, grid == -1] = 1
+    if player == 'O':
+        tensor_grid[0, grid == -1] = 1
+        tensor_grid[1, grid == 1] = 1
+    return tensor_grid
+
+
+def get_other_player(player='X'):
+   if player == 'X':
+       return 'O'
+   elif player == 'O':
+       return 'X'
+   else:
+       warnings.warn("get_other_player got an unexpected input.")
 

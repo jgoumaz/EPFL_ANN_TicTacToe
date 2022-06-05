@@ -1,6 +1,10 @@
 import random
 from utils import *
-from collections import defaultdict
+from collections import defaultdict, deque
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
 
 class QLearningPlayer():
     def __init__(self, alpha=0.05, gamma=0.99, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000, player='X'):
@@ -45,12 +49,8 @@ class QLearningPlayer():
 
         return avail[random.randint(0, len(avail)-1)]
 
-    def update_Q(self, new_grid, reward, grid=None, action=None):
+    def update_Q(self, new_grid, reward, grid, action):
         """ Update Q value """
-        if action is None:
-            action = self.action
-        if grid is None:
-            grid = self.grid
         action = position_to_index(action)
         grid = grid_to_string(grid)
         new_grid = grid_to_string(new_grid)
@@ -76,6 +76,41 @@ class QLearningPlayer():
             random.shuffle(actions)
             best_action = max(actions, key=lambda x: x[1])[0]
             move = index_to_position(best_action)
-        self.grid = grid
-        self.action = move
         return move
+
+
+class BufferMemory(object):
+    def __init__(self, buffer_size):
+        self.buffer = deque([], maxlen=buffer_size)
+
+    def __len__(self):
+        return len(self.buffer)
+
+    def store(self, transition):
+        """ Stores a transition containing (new_state, reward, state, action) """
+        self.buffer.append(transition)
+
+    def sample_random_minibatch(self, batch_size):
+        """ Samples a random minibatch of transitions """
+        return random.sample(self.buffer, batch_size)
+
+
+class DQN(nn.Module):
+    def __init__(self):
+        super(DQN, self).__init__()
+        self.DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        self.lin1 = nn.Linear(18, 128)
+        self.lin2 = nn.Linear(128, 128)
+        self.lin3 = nn.Linear(128, 9)
+
+    def forward(self, x_t):
+        x_t = x_t.to(self.DEVICE)
+        if x_t.dim() == 3:
+            x_t = x_t.view(1, x_t.shape[0], x_t.shape[1], x_t.shape[2])
+        N = x_t.shape[0]
+
+        x_t = F.relu(self.lin1(x_t.view(N, -1)))
+        x_t = F.relu(self.lin2(x_t))
+        x_t = self.lin3(x_t)
+        return x_t
