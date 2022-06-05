@@ -127,12 +127,13 @@ def run_against_itself(Player, n_games=20000, return_M_opt=False, return_M_rand=
 
 
 if __name__ == '__main__':
+    random.seed(0)
     t0 = time.time()
 
     Player = QLearningPlayer(eps=0.3, decreasing_exploration=False)
-    # a, b = run_against_itself(Player, n_games=20000, return_M_opt=True, return_M_rand=True)
-    random.seed(3)
-    a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
+    a, b, c = [], [], []
+    a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
+    # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     print(a, b, c)
 
     t1 = time.time()
