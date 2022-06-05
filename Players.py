@@ -192,9 +192,9 @@ class DeepQLearningPlayer(QLearningPlayer):
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
-    # def randomMove(self, grid):
-    #     """ Chose a random move. """
-    #     return torch.tensor([[random.randrange(9)]], device=self.DEVICE) # FIXME: dtype=torch.long ?
+    def randomMove(self, grid):
+        """ Chose a random move. """
+        return torch.tensor([[random.randrange(9)]], device=self.DEVICE) # FIXME: dtype=torch.long ?
 
     def act(self, grid):
         """ Play """
@@ -203,8 +203,8 @@ class DeepQLearningPlayer(QLearningPlayer):
         if self.decreasing_exploration:
             self.eps = max(self.eps_min, self.eps_max * (1 - self.n / self.n_star))
         if random.random() < self.eps and self.best_play == False:
-            # move = self.randomMove(grid)
-            move = torch.tensor([[position_to_index(self.randomMove(tensor_to_grid(grid, self.player)))]], device=self.DEVICE)
+            move = self.randomMove(grid)
+            # move = torch.tensor([[position_to_index(self.randomMove(tensor_to_grid(grid, self.player)))]], device=self.DEVICE)
         else:
             with torch.no_grad():
                 move = self.policy_net(grid).max(dim=1)[1].view(-1, 1)

@@ -220,8 +220,7 @@ if __name__ == '__main__':
     # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     # a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     Player = DeepQLearningPlayer(eps=0.1, decreasing_exploration=False)
-    Player.save_loss = True
-    a, b, c, d = run_DQN_against_Opt(Player, n_games=3000, return_M_opt=True, return_M_rand=True, return_average_loss=True)
+    a, b, c, d = run_DQN_against_Opt(Player, n_games=3000, return_M_opt=False, return_M_rand=False, return_average_loss=False)
     print(a, b, c, d)
 
     t1 = time.time()
