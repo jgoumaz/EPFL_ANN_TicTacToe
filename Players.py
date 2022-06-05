@@ -1,6 +1,6 @@
 import random
 from utils import *
-from collections import defaultdict
+from collections import defaultdict, deque
 
 class QLearningPlayer():
     def __init__(self, alpha=0.05, gamma=0.99, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000, player='X'):
@@ -75,5 +75,17 @@ class QLearningPlayer():
         return move
 
 
-class Memory():
-    pass
+class BufferMemory(object):
+    def __init__(self, buffer_size):
+        self.buffer = deque([], maxlen=buffer_size)
+
+    def __len__(self):
+        return len(self.buffer)
+
+    def store(self, transition):
+        """ Stores a transition containing (new_state, reward, state, action) """
+        self.buffer.append(transition)
+
+    def sample_random_minibatch(self, batch_size):
+        """ Samples a random minibatch of transitions """
+        return random.sample(self.buffer, batch_size)
