@@ -43,7 +43,8 @@ def grid_to_string(grid):
 
 
 def grid_to_tensor(grid, player='X'):
-    tensor_grid = torch.zeros((2, 3, 3))
+    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+    tensor_grid = torch.zeros((2, 3, 3)).to(DEVICE)
     # tensor_grid[0] must contain positions taken by player
     if player == 'X':
         tensor_grid[0, grid == 1] = 1
@@ -52,6 +53,18 @@ def grid_to_tensor(grid, player='X'):
         tensor_grid[0, grid == -1] = 1
         tensor_grid[1, grid == 1] = 1
     return tensor_grid
+
+
+def tensor_to_grid(tensor_grid, player='X'):
+    tensor_grid = tensor_grid.to('cpu')
+    grid = np.zeros((3,3))
+    if player == 'X':
+        grid[tensor_grid[0] == 1] = 1
+        grid[tensor_grid[1] == 1] = -1
+    if player == 'O':
+        grid[tensor_grid[0] == 1] = -1
+        grid[tensor_grid[1] == 1] = 1
+    return grid
 
 
 def get_other_player(player='X'):
