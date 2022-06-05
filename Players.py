@@ -143,7 +143,18 @@ class DeepQLearningPlayer(QLearningPlayer):
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
+        self.save_loss = True
+        self.losses = []
+        self.average_loss = None
         self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.learning_rate)
+
+    def get_loss_average(self):
+        if len(self.losses) != 0:
+            self.average_loss = sum(self.losses)/len(self.losses)
+        else:
+            self.average_loss = None
+        self.losses = []
+        return self.average_loss
 
     def optimize_model(self):
         # do not optimize model if not enough data
@@ -172,6 +183,7 @@ class DeepQLearningPlayer(QLearningPlayer):
 
         criterion = nn.HuberLoss(delta=1.0).to(self.DEVICE)
         loss = criterion(state_action_values, expected_state_action_values)
+        if self.save_loss: self.losses.append(loss.to('cpu').item())
 
         # Optimize the model
         self.optimizer.zero_grad()

@@ -133,9 +133,11 @@ def run_against_itself(Player, n_games=20000, return_M_opt=False, return_M_rand=
     return M_opts, M_rands
 
 
-def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, return_M_rand=False):
+def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, return_M_rand=False, return_average_loss=False):
     rewards = []
     average_rewards = []
+    average_loss = []
+    Player.save_loss = return_average_loss
     M_opts = []
     M_rands = []
     wins = 0
@@ -199,24 +201,28 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
             average_rewards.append(sum(rewards)/len(rewards))
             rewards = []
             Player.best_play = True
+            Player.save_loss = False
             if return_M_opt: M_opts.append(compute_M_opt(Player))
             if return_M_rand: M_rands.append(compute_M_rand(Player))
+            if return_average_loss: average_loss.append(Player.get_loss_average())
             Player.best_play = False
-    return average_rewards, M_opts, M_rands
+            Player.save_loss = return_average_loss
+    return average_rewards, M_opts, M_rands, average_loss
 
 
 if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)
-    a, b, c = [], [], []
+    a, b, c, d = [], [], [], []
     t0 = time.time()
 
     # Player = QLearningPlayer(eps=0.3, decreasing_exploration=False)
     # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     # a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     Player = DeepQLearningPlayer(eps=0.1, decreasing_exploration=False)
-    a, b, c = run_DQN_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
-    print(a, b, c)
+    Player.save_loss = True
+    a, b, c, d = run_DQN_against_Opt(Player, n_games=3000, return_M_opt=True, return_M_rand=True, return_average_loss=True)
+    print(a, b, c, d)
 
     t1 = time.time()
     print(f"Total time: {round(t1-t0,2)} sec")
