@@ -136,10 +136,11 @@ class DeepQLearningPlayer(QLearningPlayer):
         self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.learning_rate)
 
     def optimize_model(self):
+        # do not optimize model if not enough data
         if len(self.buffer) < self.batch_size:
             return None
 
-        transitions = self.buffer.sample(self.batch_size)
+        transitions = self.buffer.sample_random_minibatch(self.batch_size)
         batch = self.Transition(*zip(*transitions))  # converts list of Transitions to Transition of lists
 
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=self.DEVICE, dtype=torch.bool)  # mask of non-final states
@@ -179,5 +180,7 @@ class DeepQLearningPlayer(QLearningPlayer):
         else:
             with torch.no_grad():
                 move = self.policy_net(grid).max(dim=1)[1].view(-1, 1)
+        move = move.view(-1).tolist()
+        if len(move) == 1: move = move[0]
         return move
 
