@@ -167,10 +167,6 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
             else:
                 end = True
                 winner = Opt.player
-            # DONE: None for next_state when final
-            # DONE: check if legal move, else reward = -1
-            # DONE: get reward
-            # DONE: add to buffer, optimize
             if (Tictactoe.get_current_player() == Player.player and turn > 0) or end:
                 reward = Tictactoe.reward(player=Player.player)
                 if move_valid == False:
@@ -220,7 +216,7 @@ if __name__ == '__main__':
     # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     # a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     Player = DeepQLearningPlayer(eps=0.1, decreasing_exploration=False)
-    a, b, c, d = run_DQN_against_Opt(Player, n_games=3000, return_M_opt=False, return_M_rand=False, return_average_loss=False)
+    a, b, c, d = run_DQN_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True, return_average_loss=True)
     print(a, b, c, d)
 
     t1 = time.time()

@@ -129,12 +129,12 @@ class DQN(nn.Module):
 
 
 class DeepQLearningPlayer(QLearningPlayer):
-    def __init__(self, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000):
+    def __init__(self, eps=0.2, decreasing_exploration=False, eps_min=0.1, eps_max=0.8, n_star=5000, buffer_size=10000, batch_size=64):
         super(DeepQLearningPlayer, self).__init__(eps=eps, decreasing_exploration=decreasing_exploration, eps_min=eps_min, eps_max=eps_max, n_star=n_star)
         self.DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
-        self.buffer = BufferMemory(10000)
-        self.batch_size = 64
+        self.buffer = BufferMemory(buffer_size=buffer_size)
+        self.batch_size = batch_size
         self.learning_rate = 5e-4
         self.target_update = 500
 
@@ -166,8 +166,6 @@ class DeepQLearningPlayer(QLearningPlayer):
         transitions = self.buffer.sample_random_minibatch(self.batch_size)
         batch = self.Transition(*zip(*transitions))  # converts list of Transitions to Transition of lists
 
-        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=self.DEVICE, dtype=torch.bool)  # mask of non-final states
-        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])  # next states of non-final states
         state_batch = torch.cat(batch.state)
         action_batch = torch.cat(batch.action)
         reward_batch = torch.cat(batch.reward)
@@ -175,7 +173,11 @@ class DeepQLearningPlayer(QLearningPlayer):
         state_action_values = self.policy_net(state_batch).gather(1, action_batch)  # Q(s_t, a)
 
         next_state_values = torch.zeros(self.batch_size, device=self.DEVICE)  # V(s_{t+1})
-        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
+        next_state_empty = (sum(x is not None for x in batch.next_state) == 0)
+        if next_state_empty == False:
+            non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=self.DEVICE, dtype=torch.bool)  # mask of non-final states
+            non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])  # next states of non-final states
+            next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
         next_state_values = next_state_values.unsqueeze(1)
 
         # print(state_batch.shape, action_batch.shape, reward_batch.shape, next_state_values.shape)
@@ -202,7 +204,7 @@ class DeepQLearningPlayer(QLearningPlayer):
             self.eps = max(self.eps_min, self.eps_max * (1 - self.n / self.n_star))
         if random.random() < self.eps and self.best_play == False:
             if self.allow_illegal_random_move:
-                move = torch.tensor([[random.randrange(9)]], device=self.DEVICE) # FIXME: dtype=torch.long ?
+                move = torch.tensor([[random.randrange(9)]], device=self.DEVICE)
             else:
                 move = torch.tensor([[position_to_index(self.randomMove(tensor_to_grid(grid, self.player)))]], device=self.DEVICE)
         else:
