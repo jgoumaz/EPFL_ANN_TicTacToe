@@ -173,7 +173,7 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
                 reward = Tictactoe.reward(player=Player.player)
                 if move_valid == False:
                     reward = -1
-                if reward == 1: # The case when Player wins
+                if reward == 1 or move_valid == False: # The case when Player wins
                     Player.buffer.store(old_grids[-1], moves[-1], None, reward)
                 elif reward == -1: # The case when Player loses
                     Player.buffer.store(old_grids[-2], moves[-2], None, reward)
@@ -215,7 +215,7 @@ if __name__ == '__main__':
     # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     # a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     Player = DeepQLearningPlayer(eps=0.1, decreasing_exploration=False)
-    a, b, c = run_DQN_against_Opt(Player, n_games=4000, return_M_opt=True, return_M_rand=True)
+    a, b, c = run_DQN_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     print(a, b, c)
 
     t1 = time.time()
