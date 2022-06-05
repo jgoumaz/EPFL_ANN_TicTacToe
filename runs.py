@@ -263,7 +263,7 @@ if __name__ == '__main__':
     # Player = QLearningPlayer(eps=0.3, decreasing_exploration=False)
     # a, b, c = run_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
     # a, b = run_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True)
-    # Player = DeepQLearningPlayer(eps=0.1, decreasing_exploration=False)
+    Player = DeepQLearningPlayer(eps=0.1, decreasing_exploration=False)
     # a, b, c, d = run_DQN_against_Opt(Player, n_games=1000, return_M_opt=True, return_M_rand=True, return_average_loss=True)
     a, b, c = run_DQN_against_itself(Player, n_games=1000, return_M_opt=True, return_M_rand=True, return_average_loss=True)
     print(a, b, c, d)
