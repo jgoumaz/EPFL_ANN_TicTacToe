@@ -185,7 +185,8 @@ class DeepQLearningPlayer(QLearningPlayer):
 
         # print(state_action_values.shape, expected_state_action_values.shape)
 
-        criterion = nn.HuberLoss(delta=1.0).to(self.DEVICE)
+        # criterion = nn.HuberLoss(delta=1.0).to(self.DEVICE)
+        criterion = nn.SmoothL1Loss().to(self.DEVICE)
         loss = criterion(state_action_values, expected_state_action_values)
         if self.save_loss: self.losses.append(loss.to('cpu').item())
 
