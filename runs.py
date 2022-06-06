@@ -1,11 +1,8 @@
 import time
-
-import matplotlib.pyplot as plt
-
-from utils import *
-from Players import *
-from tic_env import TictactoeEnv, OptimalPlayer
 from tqdm import tqdm
+
+from tic_env import TictactoeEnv, OptimalPlayer
+from Players import *
 
 
 def test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X'):
@@ -257,15 +254,9 @@ def run_DQN_against_itself(Player, n_games=20000, return_M_opt=False, return_M_r
         if n%250 == 249:
             Player.best_play = True
             Player.save_loss = False
-            m = compute_M_opt(Player)
-            print(m)
-            if return_M_opt: M_opts.append(m)
-            m2 = compute_M_rand(Player)
-            print(m2)
-            if return_M_rand: M_rands.append(m2)
-            l = Player.get_loss_average()
-            print(l)
-            if return_average_loss: average_loss.append(l)
+            if return_M_opt: M_opts.append(compute_M_opt(Player))
+            if return_M_rand: M_rands.append(compute_M_rand(Player))
+            if return_average_loss: average_loss.append(Player.get_loss_average())
             Player.best_play = False
             Player.save_loss = return_average_loss
     return M_opts, M_rands, average_loss
