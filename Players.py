@@ -257,7 +257,8 @@ class DeepQLearningPlayer(QLearningPlayer):
 
         expected_state_action_values = (reward_batch + self.gamma * next_state_values) # expected Q(s_t, a)
 
-        criterion = nn.HuberLoss(delta=1.0).to(self.DEVICE) # Huber Loss
+        # criterion = nn.HuberLoss(delta=1.0).to(self.DEVICE) # Huber Loss
+        criterion = nn.SmoothL1Loss().to(self.DEVICE) # equals to Huber Loss (works for lower version of PyTorch)
         loss = criterion(state_action_values, expected_state_action_values) # calculate loss
         if self.save_loss: self.losses.append(loss.to('cpu').item()) # if save_loss, store the loss into self.losses
 
