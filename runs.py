@@ -1,5 +1,5 @@
 import time
-from tqdm import tqdm
+from tqdm import tqdm # tqdm for loading bars
 
 from tic_env import TictactoeEnv, OptimalPlayer
 from Players import *
@@ -10,22 +10,25 @@ def test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X'):
     Function used to play multiple games againt Opt for metrics computing purpose.
     :param Player: Player (QLearningPlayer or DeepQLearningPlayer)
     :param n_games: number of games (int)
-    :param opt_eps:
-    :param Player_player:
-    :return:
+    :param opt_eps: exploration level of OptimalPlayer
+    :param Player_player: 'X' or 'O'
+    :return: wins (int), losses (int)
     """
     wins = 0
     losses = 0
+
+    # create environment and OptimalPlayer
     Tictactoe = TictactoeEnv()
     Opt = OptimalPlayer(epsilon=opt_eps)
+
+    # set the players
     Opt_player = get_other_player(Player_player)
     Player.set_player(Player_player)
     Opt.set_player(Opt_player)
-    invalid = 0
-    grid_set = set()
+
     for n in range(n_games):
         Tictactoe.reset()
-        for turn in range(9):
+        for turn in range(9): # one game with a maximal number of 9 iterations
             old_grid, _, _ = Tictactoe.observe()
             if Tictactoe.get_current_player() == Opt_player:
                 move = Opt.act(old_grid)
@@ -36,23 +39,24 @@ def test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X'):
 
             if move_valid:
                 new_grid, end, winner = Tictactoe.step(move)
-            else:
-                invalid += 1
+            else: # illegal move
                 end = True
                 winner = Opt_player
-            if end:
-                g, _, _ = Tictactoe.observe()
-                grid_set.add(grid_to_string(g))
+            if end: # count wins/losses
                 if winner == Player_player:
                     wins += 1
                 elif winner == Opt_player:
                     losses += 1
                 break
-    # print(wins, losses, invalid)
-    # print(len(grid_set), grid_set)
     return wins, losses
 
+
 def compute_M_opt(Player):
+    """
+    Computes M_opt with 500 games
+    :param Player: Player (QLearningPlayer or DeepQLearningPlayer)
+    :return: M_opt (float)
+    """
     wins1, losses1 = test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X')
     wins2, losses2 = test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='O')
     wins = wins1 + wins2
@@ -60,7 +64,13 @@ def compute_M_opt(Player):
     M_opt = (wins - losses) / 500
     return M_opt
 
+
 def compute_M_rand(Player):
+    """
+    Computes M_rand with 500 games
+    :param Player: Player (QLearningPlayer or DeepQLearningPlayer)
+    :return: M_rand (float)
+    """
     wins1, losses1 = test_against_Opt(Player, n_games=250, opt_eps=1.0, Player_player='X')
     wins2, losses2 = test_against_Opt(Player, n_games=250, opt_eps=1.0, Player_player='O')
     wins = wins1 + wins2
@@ -70,6 +80,15 @@ def compute_M_rand(Player):
 
 
 def run_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, return_M_rand=False):
+    """
+    Run games with Player against OptimalPlayer. The metrics are evaluated each 250 games.
+    :param Player: Player (QLearningPlayer or DeepQLearningPlayer)
+    :param n_games: number of games (int)
+    :param opt_eps: exploration level of OptimalPlayer
+    :param return_M_opt: computes and returns M_opt if True else M_opts=[]
+    :param return_M_rand: computes and returns M_rand if True else M_rands=[]
+    :return: average_rewards (list), M_opts (list), M_rands (list)
+    """
     rewards = []
     average_rewards = []
     M_opts = []
@@ -79,7 +98,7 @@ def run_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, retu
     losses = 0
     Tictactoe = TictactoeEnv()
     Opt = OptimalPlayer(epsilon=opt_eps)
-    for n in tqdm(range(n_games)):
+    for n in tqdm(range(n_games)): # tqdm for loading bars
         Tictactoe.reset()
         old_grids = []
         moves = []
@@ -124,7 +143,7 @@ def run_against_itself(Player, n_games=20000, return_M_opt=False, return_M_rand=
     M_opts = []
     M_rands = []
     Tictactoe = TictactoeEnv()
-    for n in tqdm(range(n_games)):
+    for n in tqdm(range(n_games)): # tqdm for loading bars
         Tictactoe.reset()
         old_grids = []
         moves = []
@@ -161,7 +180,7 @@ def run_DQN_against_Opt(Player, n_games=20000, opt_eps=0.5, return_M_opt=False, 
     losses = 0
     Tictactoe = TictactoeEnv()
     Opt = OptimalPlayer(epsilon=opt_eps)
-    for n in tqdm(range(n_games)):
+    for n in tqdm(range(n_games)): # tqdm for loading bars
         Tictactoe.reset()
         old_grids = []
         moves = []
@@ -225,7 +244,7 @@ def run_DQN_against_itself(Player, n_games=20000, return_M_opt=False, return_M_r
     M_opts = []
     M_rands = []
     Tictactoe = TictactoeEnv()
-    for n in tqdm(range(n_games)):
+    for n in tqdm(range(n_games)): # tqdm for loading bars
         Tictactoe.reset()
         old_grids = []
         moves = []
