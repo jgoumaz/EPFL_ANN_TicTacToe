@@ -6,6 +6,14 @@ from Players import *
 
 
 def test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X'):
+    """
+    Function used to play multiple games againt Opt for metrics computing purpose.
+    :param Player: Player (QLearningPlayer or DeepQLearningPlayer)
+    :param n_games: number of games (int)
+    :param opt_eps:
+    :param Player_player:
+    :return:
+    """
     wins = 0
     losses = 0
     Tictactoe = TictactoeEnv()
@@ -45,11 +53,11 @@ def test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X'):
     return wins, losses
 
 def compute_M_opt(Player):
-    wins1, losses1 = test_against_Opt(Player, n_games=10, opt_eps=0.0, Player_player='X')
-    wins2, losses2 = test_against_Opt(Player, n_games=10, opt_eps=0.0, Player_player='O')
+    wins1, losses1 = test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='X')
+    wins2, losses2 = test_against_Opt(Player, n_games=250, opt_eps=0.0, Player_player='O')
     wins = wins1 + wins2
     losses = losses1 + losses2
-    M_opt = (wins - losses) / 20
+    M_opt = (wins - losses) / 500
     return M_opt
 
 def compute_M_rand(Player):
