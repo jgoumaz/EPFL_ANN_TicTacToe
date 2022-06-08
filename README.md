@@ -33,4 +33,4 @@ Main files:
 Secondary files:
 - [MP_TicTocToe.pdf](MP_TicTocToe.pdf): details and instructions for the project
 - [tic_tac_toe.ipynb](tic_tac_toe.ipynb): notebook containing use examples of [tic_env.py](tic_env.py)
-- [Figures](Figures): folder containing the plots saved from [questions.ipynb](questions.ipynb)
+- [Figures](Figures): folder containing the plots and figures saved from [questions.ipynb](questions.ipynb)
