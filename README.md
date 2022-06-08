@@ -20,7 +20,7 @@ We used different metrics (evaluated each 250 games) to measure the quality of a
 - Average reward : average reward of the last 250 games
 - $M_{opt}$ : average reward against a perfect player Opt(0)
 - $M_{rand}$ : average reward against a random player Opt(1)
-- Average losses : average Huber loss of the last 250 games (only for `DeepQLearningPlayer`)
+- Average loss : average Huber loss of the last 250 games (only for `DeepQLearningPlayer`)
 ## Repository content
 Main files:
 - [tic_env.py](tic_env.py): contains the classes `TictactoeEnv` and `OptimalPlayer`
